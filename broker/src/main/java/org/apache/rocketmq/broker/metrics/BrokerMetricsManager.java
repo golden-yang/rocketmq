@@ -50,7 +50,6 @@ import org.apache.rocketmq.common.Pair;
 import org.apache.rocketmq.common.attribute.TopicMessageType;
 import org.apache.rocketmq.common.constant.LoggerName;
 import org.apache.rocketmq.common.message.MessageConst;
-import org.apache.rocketmq.common.message.MessageDecoder;
 import org.apache.rocketmq.common.metrics.MetricsExporterType;
 import org.apache.rocketmq.common.metrics.NopLongCounter;
 import org.apache.rocketmq.common.metrics.NopLongHistogram;
@@ -59,7 +58,6 @@ import org.apache.rocketmq.common.topic.TopicValidator;
 import org.apache.rocketmq.logging.org.slf4j.Logger;
 import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
 import org.apache.rocketmq.remoting.metrics.RemotingMetricsManager;
-import org.apache.rocketmq.remoting.protocol.header.SendMessageRequestHeader;
 import org.apache.rocketmq.store.MessageStore;
 import org.apache.rocketmq.store.metrics.DefaultStoreMetricsConstant;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -209,8 +207,7 @@ public class BrokerMetricsManager {
         return TopicValidator.isSystemTopic(topic) || isSystemGroup(group);
     }
 
-    public static TopicMessageType getMessageType(SendMessageRequestHeader requestHeader) {
-        Map<String, String> properties = MessageDecoder.string2messageProperties(requestHeader.getProperties());
+    public static TopicMessageType getMessageType(Map<String, String> properties) {
         String traFlag = properties.get(MessageConst.PROPERTY_TRANSACTION_PREPARED);
         TopicMessageType topicMessageType = TopicMessageType.NORMAL;
         if (Boolean.parseBoolean(traFlag)) {
@@ -218,10 +215,10 @@ public class BrokerMetricsManager {
         } else if (properties.containsKey(MessageConst.PROPERTY_SHARDING_KEY)) {
             topicMessageType = TopicMessageType.FIFO;
         } else if (properties.get("__STARTDELIVERTIME") != null
-            || properties.get(MessageConst.PROPERTY_DELAY_TIME_LEVEL) != null
-            || properties.get(MessageConst.PROPERTY_TIMER_DELIVER_MS) != null
-            || properties.get(MessageConst.PROPERTY_TIMER_DELAY_SEC) != null
-            || properties.get(MessageConst.PROPERTY_TIMER_DELAY_MS) != null) {
+                || properties.get(MessageConst.PROPERTY_DELAY_TIME_LEVEL) != null
+                || properties.get(MessageConst.PROPERTY_TIMER_DELIVER_MS) != null
+                || properties.get(MessageConst.PROPERTY_TIMER_DELAY_SEC) != null
+                || properties.get(MessageConst.PROPERTY_TIMER_DELAY_MS) != null) {
             topicMessageType = TopicMessageType.DELAY;
         }
         return topicMessageType;

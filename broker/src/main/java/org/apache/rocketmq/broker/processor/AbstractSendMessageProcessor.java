@@ -383,6 +383,7 @@ public abstract class AbstractSendMessageProcessor implements NettyRequestProces
         } else {
             sendMessageContext.setMsgType(MessageType.Normal_Msg);
         }
+        sendMessageContext.setProperties(properties);
         return sendMessageContext;
     }
 

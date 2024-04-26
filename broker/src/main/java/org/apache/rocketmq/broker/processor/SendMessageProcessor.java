@@ -265,7 +265,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
         msgInner.setTopic(requestHeader.getTopic());
         msgInner.setQueueId(queueIdInt);
 
-        Map<String, String> oriProps = MessageDecoder.string2messageProperties(requestHeader.getProperties());
+        Map<String, String> oriProps = sendMessageContext.getProperties();
         if (!handleRetryAndDLQ(requestHeader, response, request, msgInner, topicConfig, oriProps)) {
             return response;
         }
@@ -332,7 +332,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
             asyncPutMessageFuture.thenAcceptAsync(putMessageResult -> {
                 RemotingCommand responseFuture =
                     handlePutMessageResult(putMessageResult, response, request, finalMsgInner, responseHeader, sendMessageContext,
-                        ctx, finalQueueIdInt, beginTimeMillis, mappingContext, BrokerMetricsManager.getMessageType(requestHeader));
+                        ctx, finalQueueIdInt, beginTimeMillis, mappingContext, BrokerMetricsManager.getMessageType(sendMessageContext.getProperties()));
                 if (responseFuture != null) {
                     doResponse(ctx, request, responseFuture);
                 }
@@ -353,7 +353,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
             } else {
                 putMessageResult = this.brokerController.getMessageStore().putMessage(msgInner);
             }
-            handlePutMessageResult(putMessageResult, response, request, msgInner, responseHeader, sendMessageContext, ctx, queueIdInt, beginTimeMillis, mappingContext, BrokerMetricsManager.getMessageType(requestHeader));
+            handlePutMessageResult(putMessageResult, response, request, msgInner, responseHeader, sendMessageContext, ctx, queueIdInt, beginTimeMillis, mappingContext, BrokerMetricsManager.getMessageType(sendMessageContext.getProperties()));
             // record the transaction metrics
             if (putMessageResult.getPutMessageStatus() == PutMessageStatus.PUT_OK && putMessageResult.getAppendMessageResult().isOk()) {
                 this.brokerController.getTransactionalMessageService().getTransactionMetrics().addAndGet(msgInner.getProperty(MessageConst.PROPERTY_REAL_TOPIC), 1);
@@ -625,7 +625,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
             asyncPutMessageFuture.thenAcceptAsync(putMessageResult -> {
                 RemotingCommand responseFuture =
                     handlePutMessageResult(putMessageResult, response, request, messageExtBatch, responseHeader,
-                        sendMessageContext, ctx, finalQueueIdInt, beginTimeMillis, mappingContext, BrokerMetricsManager.getMessageType(requestHeader));
+                        sendMessageContext, ctx, finalQueueIdInt, beginTimeMillis, mappingContext, BrokerMetricsManager.getMessageType(sendMessageContext.getProperties()));
                 if (responseFuture != null) {
                     doResponse(ctx, request, responseFuture);
                 }
@@ -641,7 +641,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
                 putMessageResult = this.brokerController.getMessageStore().putMessages(messageExtBatch);
             }
             handlePutMessageResult(putMessageResult, response, request, messageExtBatch, responseHeader,
-                sendMessageContext, ctx, queueIdInt, beginTimeMillis, mappingContext, BrokerMetricsManager.getMessageType(requestHeader));
+                sendMessageContext, ctx, queueIdInt, beginTimeMillis, mappingContext, BrokerMetricsManager.getMessageType(sendMessageContext.getProperties()));
             sendMessageCallback.onComplete(sendMessageContext, response);
             return response;
         }

@@ -16,6 +16,7 @@
  */
 package org.apache.rocketmq.broker.mqtrace;
 
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.rocketmq.common.message.MessageType;
@@ -47,6 +48,7 @@ public class SendMessageContext {
     private MessageType msgType = MessageType.Trans_msg_Commit;
 
     private boolean isSuccess = false;
+    private Map<String, String> properties;
 
     /**
      * Account Statistics
@@ -321,5 +323,13 @@ public class SendMessageContext {
 
     public void setCommercialSendTimes(final int commercialSendTimes) {
         this.commercialSendTimes = commercialSendTimes;
+    }
+
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(Map<String, String> properties) {
+        this.properties = properties;
     }
 }
